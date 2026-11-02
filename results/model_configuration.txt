@@ -1,0 +1,9 @@
+Model ID: amazon/chronos-2
+Model Revision: 29ec3766d36d6f73f0696f85560a422f50e8498c
+Device: CPU
+Prediction Length: 1
+Quantile Levels: [0.5]
+Historical Context: Expanding window
+C0: Price-only
+C1: Price + log_article_count + mean_tone
+Fine-tuning: None

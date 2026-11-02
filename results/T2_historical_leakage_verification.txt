@@ -1,0 +1,25 @@
+T2 - HISTORICAL NEWS TIMESTAMP LEAKAGE VERIFICATION
+
+Historical trading dates audited: 369
+Available news dates: 357
+Unavailable news dates: 12
+Article count mismatches: 0
+Lower-bound leakage: 0
+Upper-bound leakage: 0
+
+Timezone: Asia/Kolkata
+Forecast cutoff: 18:00 IST
+Interval rule:
+Previous trading-day cutoff < Article timestamp <= Current trading-day cutoff
+
+Unavailable coverage dates were preserved separately.
+
+Evidence:
+historical_news_leakage_audit.csv
+
+STATUS: HISTORICAL TIMESTAMP LEAKAGE AUDIT PASSED
+
+Limitation:
+Verification is based on the supplied cleaned GDELT extracts.
+Original GDELT source completeness and Reliance organization
+matching remain unverified.

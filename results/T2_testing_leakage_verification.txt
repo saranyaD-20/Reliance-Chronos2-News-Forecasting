@@ -1,0 +1,23 @@
+T2 - TESTING NEWS TIMESTAMP LEAKAGE VERIFICATION
+
+Testing trading dates audited: 65
+Article count mismatches: 0
+Lower-bound leakage: 0
+Upper-bound leakage: 0
+
+Timezone: Asia/Kolkata
+Forecast cutoff: 18:00 IST
+Interval rule: Previous trading-day cutoff < Article timestamp <= Current trading-day cutoff
+
+Article counts matched independently calculated counts
+for all 65 testing dates.
+
+Evidence:
+testing_news_leakage_audit.csv
+
+STATUS: TESTING TIMESTAMP LEAKAGE AUDIT PASSED
+
+Limitation:
+Verification is based on supplied raw GDELT extracts.
+GDELT source completeness and Reliance organization matching
+remain unverified.

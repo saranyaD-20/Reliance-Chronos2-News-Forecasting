@@ -1,0 +1,15 @@
+T2 - HISTORICAL NEWS COVERAGE VERIFICATION
+
+Total historical trading dates: 369
+Available dates: 357
+Unavailable dates: 12
+Available dates with zero articles: 0
+Available dates with missing article_count or mean_tone: 0
+
+Missing coverage period:
+2025-06-16 to 2025-07-01
+
+Unavailable dates retain NaN article_count and mean_tone.
+Missing coverage is not interpreted as zero news.
+
+STATUS: COVERAGE FLAGS VERIFIED

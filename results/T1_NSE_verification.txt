@@ -1,0 +1,29 @@
+T1 - NSE STOCK DATA VERIFICATION
+
+Stock: RELIANCE
+Exchange: NSE
+Series: EQ
+Price field: Close Price
+Price unit: INR
+
+Source files: 4 original NSE CSV files
+Source rows before filtering: 490
+RELIANCE EQ rows before deduplication: 478
+Duplicate identical rows removed: 44
+Conflicting EQ records: 0
+
+Cleaned NSE records: 434
+Unique trading dates: 434
+Date range: 2025-01-01 to 2026-09-30
+Missing closing prices: 0
+Duplicate dates after cleaning: 0
+
+Forecast dataset rows: 433
+Matched NSE closing prices: 433
+Mismatched closing prices: 0
+Missing NSE dates in forecast dataset: 0
+
+STATUS: PRICE DATA VALIDATION PASSED
+
+Note: Official source provenance and file hashes
+require separate documentation.

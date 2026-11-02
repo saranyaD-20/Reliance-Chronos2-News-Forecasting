@@ -1,0 +1,44 @@
+T6 - FRONTEND VERIFICATION REPORT
+
+Project: FORECAST-001 - News-Augmented Reliance Stock Benchmark
+Date: 02-Nov-2026
+
+1. Dashboard
+Status: PASSED
+- React and Vite dashboard loads locally.
+- Dashboard displays benchmark information and visualizations.
+
+2. API Integration
+Status: PASSED
+- Dashboard retrieves benchmark metrics from the FastAPI backend.
+- KPI values are dynamically fetched from the metrics endpoint.
+
+3. Stock Forecast Chart
+Status: PASSED
+- Corrected prediction dataset contains 64 forecast records.
+- Forecast dates and target dates were checked.
+- September 1, 2026 forecast record was verified.
+
+4. News Analysis
+Status: PARTIALLY VERIFIED
+- Dashboard uses the corrected testing news feature dataset.
+- News article counts and mean tone are displayed.
+- Historical news coverage has documented gaps.
+
+5. Model Comparison
+Status: PENDING FINAL UI VERIFICATION
+- Corrected benchmark metrics are available.
+- Confirm the displayed comparison values match the corrected metrics.
+
+6. Dashboard Question and Answer
+Status: PASSED
+- Tested: Which model performed best?
+- Response correctly identified Naive with MAE 12.4062.
+
+7. Limitations
+- Local dashboard verification only.
+- Public HTTPS deployment not verified.
+- Windmill and Supabase integration not verified.
+- Final screenshots and video evidence still need to be collected.
+
+OVERALL STATUS: PARTIALLY VERIFIED

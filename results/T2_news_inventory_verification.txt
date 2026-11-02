@@ -1,0 +1,13 @@
+T2 - GDELT NEWS SOURCE INVENTORY
+
+Total valid raw rows: 30055
+Unique article URLs: 28141
+Duplicate URL rows: 1914
+Historical coverage: Incomplete
+Missing/empty weekly files: Weeks 24-26 and 28-35
+Duplicate source files: reliance_news_july_2025.csv and reliance_news_july_2025 (2).csv
+Duplicate file SHA256: D96AFB2F734124A64A80D6BF3E90618E8E17C4F9AAABA9760A45E8449390B8C2
+Reliance organization matching: Not verified
+Original GDELT extraction SQL: Not found
+
+STATUS: PARTIAL - SOURCE INVENTORY VERIFIED; RELEVANCE AND COVERAGE LIMITATIONS DOCUMENTED

@@ -1,0 +1,23 @@
+T3 - FORECAST DATASET INTEGRITY VERIFICATION
+
+Dataset:
+final_next_day_forecasting_dataset_corrected.csv
+
+Total records: 433
+Available news records: 421
+Unavailable news records: 12
+
+Missing stock prices: 0
+Missing forecast/target dates: 0
+Duplicate forecast dates: 0
+Invalid target dates: 0
+
+log1p(article_count) validation: PASSED
+Unavailable news values preserved as missing: PASSED
+
+Unavailable rows incorrectly filled: 0
+
+STATUS: DATASET INTEGRITY PASSED
+
+Evidence:
+final_next_day_forecasting_dataset_corrected.csv

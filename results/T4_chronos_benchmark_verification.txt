@@ -1,0 +1,39 @@
+T4 - CHRONOS-2 BENCHMARK VERIFICATION
+
+Model: amazon/chronos-2
+Revision: 29ec3766d36d6f73f0696f85560a422f50e8498c
+Device: CPU
+Prediction length: 1
+Quantile: 0.5
+Historical context: Expanding window
+Fine-tuning: None
+
+Testing forecast records: 64
+Missing prediction values: 0
+
+NAIVE BASELINE
+MAE: 12.4062
+RMSE: 15.4797
+
+C0 - CHRONOS-2 PRICE ONLY
+MAE: 12.4710
+RMSE: 15.9118
+Directional accuracy: 50%
+
+C1 - CHRONOS-2 PRICE + NEWS
+MAE: 12.7798
+RMSE: 15.9510
+Directional accuracy: 50%
+
+NEWS IMPACT
+Relative MAE change: -2.48%
+News did not improve forecasting accuracy.
+
+Best MAE and RMSE: Naive baseline
+
+STATUS: BENCHMARK EXECUTION AND PREDICTION VALIDATION PASSED
+
+Evidence:
+testing_model_predictions_corrected.csv
+benchmark_metrics_revised_corrected.csv
+model_configuration.txt

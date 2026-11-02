@@ -1,0 +1,33 @@
+T5 - BACKEND AND API VERIFICATION
+
+Backend: FastAPI
+Host: 127.0.0.1
+Port: 8000
+
+Corrected benchmark configuration:
+Metrics: benchmark_metrics_revised_corrected.csv
+Predictions: testing_model_predictions_corrected.csv
+Script: run_benchmarks_corrected.py
+
+API:
+Health endpoint: Passed
+Execution-status endpoint: Passed
+Ask endpoint: Passed
+
+Assistant functional tests:
+Best model: Passed
+News impact: Passed
+MAE: Passed
+RMSE: Passed
+Directional accuracy: Passed
+
+Assistant limitation:
+Rule-based responses only.
+Specific news articles by forecast date are not supported.
+
+Architecture deviation:
+Current backend uses local FastAPI.
+SOW requires Supabase Edge Functions and Windmill.
+These components are not yet implemented.
+
+STATUS: PARTIAL - LOCAL API FUNCTIONALITY VERIFIED

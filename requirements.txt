@@ -1,0 +1,8 @@
+chronos-forecasting==2.3.2
+fastapi
+uvicorn[standard]
+pydantic
+matplotlib
+numpy==1.26.4
+pandas==2.2.1
+torch

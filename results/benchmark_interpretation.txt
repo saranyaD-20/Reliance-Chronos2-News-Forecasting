@@ -1,0 +1,31 @@
+RELIANCE STOCK FORECASTING - BENCHMARK INTERPRETATION
+
+Testing Forecasts: 64
+
+1. NAIVE BASELINE
+MAE: 12.4062
+RMSE: 15.4797
+
+2. C0 - CHRONOS-2 PRICE ONLY
+MAE: 12.4710
+RMSE: 15.9118
+Directional Accuracy: 50%
+
+3. C1 - CHRONOS-2 PRICE + NEWS
+MAE: 12.7798
+RMSE: 15.9510
+Directional Accuracy: 50%
+
+NEWS EFFECT
+Relative MAE change (C0 to C1): -2.48%
+
+INTERPRETATION
+Adding news features increased MAE by approximately 2.48%.
+The naive baseline achieved the lowest MAE and RMSE.
+Both Chronos-2 configurations achieved 50% directional accuracy.
+
+CONCLUSION
+News augmentation did not improve next-day Reliance stock
+forecasting accuracy in this evaluation period.
+
+This is a historical research benchmark, not investment advice.
