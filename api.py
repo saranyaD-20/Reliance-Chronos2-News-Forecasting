@@ -1,21 +1,20 @@
-
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pathlib import Path
-from datetime import datetime
-from threading import Thread, Lock
+from dotenv import load_dotenv
+import os
+import secrets
 import subprocess
 import sys
 import pandas as pd
 
-from supabase_client import supabase
-
-
-# PROJECT CONFIGURATION
 BASE_DIR = Path(__file__).resolve().parent
-RESULTS_DIR = BASE_DIR / "results"
+load_dotenv(BASE_DIR / ".env")
 
+WINDMILL_API_TOKEN = os.getenv("WINDMILL_API_TOKEN")
+
+RESULTS_DIR = BASE_DIR / "results"
 METRICS_FILE = RESULTS_DIR / "benchmark_metrics_revised_corrected.csv"
 PREDICTIONS_FILE = RESULTS_DIR / "testing_model_predictions_corrected.csv"
 BENCHMARK_SCRIPT = BASE_DIR / "run_benchmarks_corrected.py"
@@ -140,7 +139,7 @@ def sync_forecasts_to_supabase():
 
 # MANUAL SUPABASE SYNC ENDPOINTS
 @app.post("/sync-supabase")
-def sync_supabase():
+def sync_supabase(token: None = Depends(verify_windmill_token)):
     try:
         count = sync_metrics_to_supabase()
 
@@ -155,7 +154,7 @@ def sync_supabase():
 
 
 @app.post("/sync-forecasts")
-def sync_forecasts():
+def sync_forecasts(token: None = Depends(verify_windmill_token)):
     try:
         count = sync_forecasts_to_supabase()
 
@@ -170,7 +169,8 @@ def sync_forecasts():
 
 
 # BENCHMARK EXECUTION
-def run_benchmark():
+@app.post("/run-benchmark")
+def start_benchmark(token: None = Depends(verify_windmill_token)):
 
     try:
         update_execution(
@@ -282,14 +282,14 @@ def start_benchmark():
 
 # EXECUTION STATUS
 @app.get("/execution-status")
-def get_execution_status():
+def get_execution_status(token: None = Depends(verify_windmill_token)):
     with execution_lock:
         return execution.copy()
 
 
 # METRICS
 @app.get("/metrics")
-def get_metrics():
+def get_metrics(token: None = Depends(verify_windmill_token)):
 
     if not METRICS_FILE.exists():
         raise HTTPException(
@@ -331,7 +331,7 @@ def get_metrics():
 
 # PREDICTIONS
 @app.get("/predictions")
-def get_predictions():
+def get_predictions(token: None = Depends(verify_windmill_token)):
 
     if not PREDICTIONS_FILE.exists():
         raise HTTPException(
