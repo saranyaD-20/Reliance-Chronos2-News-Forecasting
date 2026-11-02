@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "class-variance-authority": "^0.7.1",
     "cn": "^0.5.1",
     "radix-ui": "^1.8.1",
     "react": "^19.3.1",

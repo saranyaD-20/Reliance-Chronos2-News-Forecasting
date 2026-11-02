@@ -1,11 +1,14 @@
 
 import { useEffect, useState } from 'react'
-
+import { supabase } from './lib/supabase'
+import type { Session } from '@supabase/supabase-js'
+import Login from './components/ui/Login'
 import BenchmarkControls from './BenchmarkControls'
 import StockChart from './StockChart'
 import NewsChart from './NewsChart'
 import ModelComparison from './ModelComparison'
 import BenchmarkQA from './BenchmarkQA'
+
 import './App.css'
 
 interface Metrics {
@@ -17,37 +20,111 @@ interface Metrics {
 }
 
 export default function App() {
+  const [session, setSession] = useState<Session | null>(null)
+  const [checkingAuth, setCheckingAuth] = useState(true)
+
   const [metrics, setMetrics] = useState<Metrics[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // Check Supabase authentication
   useEffect(() => {
+    let mounted = true
+
+    const checkSession = async () => {
+      const { data, error } = await supabase.auth.getSession()
+
+      if (!mounted) return
+
+      if (error) {
+        setError(error.message)
+      }
+
+      setSession(data.session)
+      setCheckingAuth(false)
+    }
+
+    checkSession()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession)
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  // Fetch benchmark metrics only after login
+  useEffect(() => {
+    if (!session) {
+      setMetrics([])
+      setLoading(true)
+      return
+    }
+
     const fetchMetrics = async () => {
       try {
-        const response = await fetch(
-          'http://127.0.0.1:8000/metrics'
+        setLoading(true)
+
+        const { data, error } = await supabase
+          .from('benchmark_metrics')
+          .select('*')
+
+        if (error) throw error
+
+        const formattedMetrics: Metrics[] = (data ?? []).map(
+          (item) => ({
+            Model: item.model_name,
+            MAE: Number(item.mae),
+            RMSE: Number(item.rmse),
+            Directional_Accuracy:
+              item.directional_accuracy === null
+                ? null
+                : Number(item.directional_accuracy),
+            Directional_Calls: 0,
+          })
         )
 
-        if (!response.ok) {
-          throw new Error('Unable to load benchmark metrics.')
-        }
-
-        const data: Metrics[] = await response.json()
-
-        setMetrics(data)
+        setMetrics(formattedMetrics)
         setError('')
-      } catch {
-        setError(
-          'Unable to load metrics. Please check FastAPI.'
-        )
+      } catch (err) {
+        console.error('Failed to fetch Supabase metrics:', err)
+        setError('Unable to load metrics from Supabase.')
       } finally {
         setLoading(false)
       }
     }
 
     fetchMetrics()
-  }, [])
+  }, [session])
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut()
+
+    if (error) {
+      setError('Unable to log out: ' + error.message)
+    }
+  }
+
+  // Authentication loading screen
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Checking login...
+      </div>
+    )
+  }
+
+  // Show login page when user is not authenticated
+  if (!session) {
+    return <Login onLogin={() => {}} />
+  }
+
+  // Identify model metrics
   const naive = metrics.find(
     (item) => item.Model === 'Naive'
   )
@@ -78,15 +155,18 @@ export default function App() {
             Forecasting Benchmark
           </p>
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="logout-button"
+        >
+          Logout
+        </button>
       </header>
 
       <main className="dashboard-content">
 
-        {/* Benchmark execution */}
-
         <BenchmarkControls />
-
-        {/* KPI summary */}
 
         <section className="dashboard-section">
           <h2>Benchmark Summary</h2>
@@ -100,23 +180,17 @@ export default function App() {
 
               <div className="kpi-card">
                 <span>Naive MAE</span>
-                <h3>
-                  {naive?.MAE.toFixed(2) ?? 'N/A'}
-                </h3>
+                <h3>{naive?.MAE.toFixed(2) ?? 'N/A'}</h3>
               </div>
 
               <div className="kpi-card">
                 <span>C0 Chronos-2 MAE</span>
-                <h3>
-                  {c0?.MAE.toFixed(2) ?? 'N/A'}
-                </h3>
+                <h3>{c0?.MAE.toFixed(2) ?? 'N/A'}</h3>
               </div>
 
               <div className="kpi-card">
                 <span>C1 Chronos-2 + News MAE</span>
-                <h3>
-                  {c1?.MAE.toFixed(2) ?? 'N/A'}
-                </h3>
+                <h3>{c1?.MAE.toFixed(2) ?? 'N/A'}</h3>
               </div>
 
               <div className="kpi-card">
@@ -132,8 +206,6 @@ export default function App() {
           )}
         </section>
 
-        {/* Stock price chart */}
-
         <section className="dashboard-section">
           <h2>Actual vs Predicted Stock Prices</h2>
 
@@ -146,8 +218,6 @@ export default function App() {
             <StockChart />
           </div>
         </section>
-
-        {/* News analysis */}
 
         <section className="dashboard-section">
           <h2>News Analysis</h2>
@@ -162,8 +232,6 @@ export default function App() {
           </div>
         </section>
 
-        {/* Model comparison */}
-
         <section className="dashboard-section">
           <h2>Model Performance Comparison</h2>
 
@@ -174,8 +242,6 @@ export default function App() {
 
           <ModelComparison />
         </section>
-
-        {/* Project information */}
 
         <section className="dashboard-section about-section">
           <h2>About This Project</h2>
@@ -208,6 +274,7 @@ export default function App() {
             </div>
           </div>
         </section>
+
         <BenchmarkQA />
 
       </main>
