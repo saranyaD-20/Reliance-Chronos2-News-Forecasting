@@ -1,0 +1,19 @@
+T5 - INDEPENDENT METRIC VERIFICATION
+Date: 02 November 2026
+Prediction records: 64
+
+Naive MAE: 12.406250
+C0 MAE: 12.471048
+C1 MAE: 12.779792
+
+Naive RMSE: 15.479735
+C0 RMSE: 15.911770
+C1 RMSE: 15.951036
+
+C0 Directional Accuracy: 50%
+C1 Directional Accuracy: 50%
+
+News Effect: -2.4757%
+
+Result: NUMERICAL VERIFICATION PASSED.
+All stored and independently calculated metrics match.

@@ -1,0 +1,39 @@
+FORECAST-001 - CHRONOS-2 HANDOVER CHECKLIST
+
+1. SOURCE CODE
+[ ] GitHub repository and final commit SHA
+[ ] Python dependency lockfile
+[ ] React dashboard source code
+
+2. DATA AND MODEL
+[ ] NSE historical price dataset
+[ ] GDELT historical news dataset and query
+[ ] Chronos-2 model ID and revision
+[ ] Forecast configuration
+[ ] Three-model predictions CSV
+[ ] Benchmark metrics CSV
+
+3. SUPABASE
+[ ] Database schema
+[ ] RLS policies
+[ ] Auth configuration
+[ ] Edge Function - PENDING
+
+4. WINDMILL
+[ ] Flow export - PENDING
+[ ] Successful benchmark execution - PENDING
+
+5. VERIFICATION
+[ ] T1-T9 evidence
+[ ] Three-date leakage audit
+[ ] Independent metrics verification
+[ ] Reproducibility comparison
+
+6. ONBOARDING
+[ ] README
+[ ] .env.example
+[ ] Recovery instructions
+[ ] New-user login test
+[ ] 30-minute onboarding timing
+
+OVERALL STATUS: INCOMPLETE - PENDING ITEMS REMAIN
