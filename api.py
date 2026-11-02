@@ -8,7 +8,8 @@ import secrets
 import subprocess
 import sys
 import pandas as pd
-
+from threading import Lock
+from supabase_client import supabase
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
@@ -18,8 +19,6 @@ RESULTS_DIR = BASE_DIR / "results"
 METRICS_FILE = RESULTS_DIR / "benchmark_metrics_revised_corrected.csv"
 PREDICTIONS_FILE = RESULTS_DIR / "testing_model_predictions_corrected.csv"
 BENCHMARK_SCRIPT = BASE_DIR / "run_benchmarks_corrected.py"
-
-
 # FASTAPI APPLICATION
 app = FastAPI(
     title="Reliance Stock Forecasting API",
@@ -136,7 +135,30 @@ def sync_forecasts_to_supabase():
 
     return len(records)
 
+def verify_windmill_token(
+    authorization: str = Header(default="")
+):
+    if not WINDMILL_API_TOKEN:
+        raise HTTPException(
+            status_code=500,
+            detail="API token is not configured"
+        )
 
+    scheme, _, supplied_token = authorization.partition(" ")
+
+    if (
+        scheme.lower() != "bearer"
+        or not secrets.compare_digest(
+            supplied_token,
+            WINDMILL_API_TOKEN
+        )
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or missing API token"
+        )
+
+    return True
 # MANUAL SUPABASE SYNC ENDPOINTS
 @app.post("/sync-supabase")
 def sync_supabase(token: None = Depends(verify_windmill_token)):
@@ -281,8 +303,9 @@ def start_benchmark():
 
 
 # EXECUTION STATUS
+
 @app.get("/execution-status")
-def get_execution_status(token: None = Depends(verify_windmill_token)):
+def execution_status():
     with execution_lock:
         return execution.copy()
 

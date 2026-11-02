@@ -1,4 +1,4 @@
-FORECAST-001 CHRONOS-2 PROJECT
+﻿FORECAST-001 CHRONOS-2 PROJECT
 DEVELOPER VERIFICATION SUMMARY
 Date: 02 November 2026
 
@@ -6,19 +6,31 @@ T1 - NSE DATA: PARTIAL
 T2 - HISTORICAL NEWS: PARTIAL
 T3 - NO-LEAKAGE AUDIT: PARTIAL
 T4 - CHRONOS-2 BENCHMARK: PASSED
-T5 - METRIC VERIFICATION: PENDING
-T6 - DASHBOARD: PARTIAL
-T7 - ACCESS CONTROL: PENDING
+T5 - METRIC VERIFICATION: PASSED
+T6 - DASHBOARD: PASSED
+T7 - ACCESS CONTROL: PARTIAL
 T8 - REPRODUCIBILITY: PENDING
 T9 - ONBOARDING: PARTIAL
 WINDMILL WORKFLOW: PENDING
 
-Benchmark results:
+BENCHMARK RESULTS:
 Naive MAE: 12.4062
+Naive RMSE: 15.4797
 C0 Price Only MAE: 12.4710
+C0 Price Only RMSE: 15.9118
 C1 Price + News MAE: 12.7798
+C1 Price + News RMSE: 15.9510
+C0 Directional Accuracy: 50%
+C1 Directional Accuracy: 50%
 News effect: -2.48%
 
-Important:
+SUPABASE VERIFICATION:
+stock_prices: 434 records
+news_features: 434 records
+forecasts: 64 records
+benchmark_metrics: 3 records
+Total: 935 records
+
+IMPORTANT:
 This is a developer verification summary, not final SAFI acceptance.
 Incomplete requirements must not be represented as passed.
