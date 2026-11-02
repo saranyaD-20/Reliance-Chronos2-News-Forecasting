@@ -15,6 +15,7 @@ This is a research benchmark, not an investment recommendation.
 ## Technology Stack
 
 ### Backend and Machine Learning
+
 - Python
 - FastAPI
 - Chronos-2 (`amazon/chronos-2`)
@@ -23,12 +24,14 @@ This is a research benchmark, not an investment recommendation.
 - Matplotlib
 
 ### Frontend
+
 - React
 - TypeScript
 - Vite
 - Recharts
 
 ### Data Sources
+
 - NSE Reliance historical equity data
 - GDELT Global Knowledge Graph news data
 
@@ -65,10 +68,12 @@ Reliance_Forecasting_Project/
 - Testing period: July 2026 – September 2026
 
 The corrected forecasting dataset contains 433 rows:
+
 - 369 historical records
 - 64 testing forecast origins
 
 News features:
+
 - Daily article count
 - Log-transformed article count using `log1p`
 - Mean GDELT V2Tone
@@ -86,11 +91,11 @@ News features are aligned to NSE trading-day forecast origins using the 18:00 As
 
 ## Benchmark Results
 
-| Model | MAE | RMSE | Directional Accuracy |
-|---|---:|---:|---:|
-| Naive | 12.4062 | 15.4797 | N/A |
-| C0 – Price Only | 12.4710 | 15.9118 | 50.00% |
-| C1 – Price + News | 12.7798 | 15.9510 | 50.00% |
+| Model             |     MAE |    RMSE | Directional Accuracy |
+| ----------------- | ------: | ------: | -------------------: |
+| Naive             | 12.4062 | 15.4797 |                  N/A |
+| C0 – Price Only   | 12.4710 | 15.9118 |               50.00% |
+| C1 – Price + News | 12.7798 | 15.9510 |               50.00% |
 
 Adding news increased MAE by approximately 2.48% compared with the price-only Chronos-2 model.
 
