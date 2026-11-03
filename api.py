@@ -11,6 +11,15 @@ import pandas as pd
 from threading import Lock, Thread
 from datetime import datetime
 from supabase_client import supabase
+load_dotenv()
+
+BASE_DIR = Path(__file__).resolve().parent
+RESULTS_DIR = BASE_DIR / "results"
+
+METRICS_FILE = RESULTS_DIR / "benchmark_metrics_revised_corrected.csv"
+PREDICTIONS_FILE = RESULTS_DIR / "testing_model_predictions_corrected.csv"
+
+BENCHMARK_SCRIPT = BASE_DIR / "run_benchmarks_corrected.py"
 app = FastAPI(
     title="Reliance Stock Forecasting API",
     description="Chronos-2 stock forecasting benchmark API",
@@ -223,7 +232,19 @@ def health_check():
 
 # RUN BENCHMARK
 @app.post("/run-benchmark")
-def start_benchmark():
+def start_benchmark(
+    x_api_key: str = Header(...)
+):
+    expected_key = os.getenv("API_SECRET_KEY")
+
+    if not expected_key or not secrets.compare_digest(
+        x_api_key, expected_key
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or missing API key."
+        )
+
     with execution_lock:
 
         if execution["status"] == "running":
@@ -244,6 +265,7 @@ def start_benchmark():
 
     thread = Thread(target=run_benchmark, daemon=True)
     thread.start()
+
     return {
         "message": "Benchmark started successfully.",
         "status": "running"
