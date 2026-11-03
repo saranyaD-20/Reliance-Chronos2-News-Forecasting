@@ -194,10 +194,11 @@ def get_supabase_forecasts():
             "data": response.data
         }
 
-    except Exception:
+    except Exception as e:
+        print(f"Supabase forecasts error: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail="Unable to retrieve Supabase forecasts."
+            detail=str(e)
         )
 @app.post("/sync-forecasts")
 def sync_forecasts(token: None = Depends(verify_windmill_token)):
