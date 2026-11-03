@@ -31,7 +31,7 @@ function StockChart() {
     const fetchForecasts = async () => {
       try {
         const response = await fetch(
-          'http://127.0.0.1:8002/supabase-forecasts'
+          'https://reliance-chronos-api.onrender.com/supabase-forecasts'
         )
 
         if (!response.ok) {

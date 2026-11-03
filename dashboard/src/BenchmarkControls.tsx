@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
-const API_URL = 'http://127.0.0.1:8002'
+const API_URL = 'https://reliance-chronos-api.onrender.com'
 
 interface ExecutionStatus {
   status: 'idle' | 'running' | 'completed' | 'failed'

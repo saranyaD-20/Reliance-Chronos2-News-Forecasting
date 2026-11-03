@@ -35,7 +35,7 @@ function NewsChart() {
   const [error, setError] = React.useState('')
 
   React.useEffect(() => {
-    fetch('http://127.0.0.1:8002/supabase-news-features')
+    fetch('https://reliance-chronos-api.onrender.com/supabase-news-features')
       .then((response) => {
         if (!response.ok) {
           throw new Error('Unable to load news data from Supabase')
