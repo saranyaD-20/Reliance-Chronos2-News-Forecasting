@@ -1,0 +1,15 @@
+T1 NSE PRICE CONSISTENCY CHECK
+Date: 02-Nov-2026
+
+NSE clean source records: 434
+Forecasting dataset records: 434
+Expected comparison result: 434 matching dates
+Required series: RELIANCE EQ
+Price field: Close Price
+
+Official NSE source provenance: PENDING
+Original file SHA256 inventory: CREATED
+NSE CSV structure: VERIFIED
+EQ-only unique trading dates: VERIFIED
+
+T1 STATUS: PARTIAL – awaiting official source provenance.

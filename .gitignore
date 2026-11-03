@@ -24,3 +24,8 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Temporary API backups
+api_clean.py
+api_before_cleanup.py
+api_duplicate_backup.py

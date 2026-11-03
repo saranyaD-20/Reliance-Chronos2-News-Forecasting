@@ -28,36 +28,45 @@ function StockChart() {
   const [error, setError] = React.useState('')
 
   React.useEffect(() => {
-    fetch('/testing_model_predictions_corrected.csv')
-      .then((response) => {
+    const fetchForecasts = async () => {
+      try {
+        const response = await fetch(
+          'http://127.0.0.1:8000/supabase-forecasts'
+        )
+
         if (!response.ok) {
-          throw new Error('Unable to load prediction data')
+          throw new Error('Unable to retrieve forecasts from Supabase.')
         }
-        return response.text()
-      })
-      .then((csv) => {
-        const rows = csv.trim().split(/\r?\n/)
 
-        const parsed = rows.slice(1).map((row) => {
-          const values = row.split(',')
+        const result = await response.json()
 
-          return {
-            forecast_date: values[0],
-            target_date: values[1],
-            target_close: Number(values[3]),
-            naive_prediction: Number(values[4]),
-            c0_prediction: Number(values[5]),
-            c1_prediction: Number(values[6]),
-          }
-        })
+        if (result.status !== 'success' || !Array.isArray(result.data)) {
+          throw new Error('Invalid forecast data received.')
+        }
+
+        const parsed: Prediction[] = result.data.map((item: Prediction) => ({
+          forecast_date: item.forecast_date,
+          target_date: item.target_date,
+          target_close: Number(item.target_close),
+          naive_prediction: Number(item.naive_prediction),
+          c0_prediction: Number(item.c0_prediction),
+          c1_prediction: Number(item.c1_prediction),
+        }))
 
         setData(parsed)
+        setError('')
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Something went wrong while loading forecasts.'
+        )
+      } finally {
         setLoading(false)
-      })
-      .catch((err) => {
-        setError(err.message)
-        setLoading(false)
-      })
+      }
+    }
+
+    fetchForecasts()
   }, [])
 
   const filteredData = data.filter(
@@ -67,7 +76,7 @@ function StockChart() {
   )
 
   if (loading) {
-    return <p className="p-4 text-slate-500">Loading stock data...</p>
+    return <p className="p-4 text-slate-500">Loading forecasts from Supabase...</p>
   }
 
   if (error) {

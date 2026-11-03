@@ -14,9 +14,17 @@ import {
 
 type NewsData = {
   forecast_date: string
+  trading_date: string
   article_count: number
-  mean_tone: number
+  log_article_count: number
+  mean_tone: number | null
   coverage_status: string
+}
+
+type NewsApiResponse = {
+  status: string
+  count: number
+  data: NewsData[]
 }
 
 function NewsChart() {
@@ -27,26 +35,30 @@ function NewsChart() {
   const [error, setError] = React.useState('')
 
   React.useEffect(() => {
-    fetch('/testing_news_forecast_features.csv')
+    fetch('http://127.0.0.1:8000/supabase-news-features')
       .then((response) => {
         if (!response.ok) {
-          throw new Error('Unable to load news data')
+          throw new Error('Unable to load news data from Supabase')
         }
-        return response.text()
+        return response.json()
       })
-      .then((csv) => {
-        const rows = csv.trim().split(/\r?\n/)
+      .then((result: NewsApiResponse) => {
+        if (result.status !== 'success') {
+          throw new Error('News API returned an unsuccessful response')
+        }
 
-        const parsed = rows.slice(1).map((row) => {
-          const values = row.split(',')
-
-          return {
-            forecast_date: values[0],
-            article_count: Number(values[1]),
-            mean_tone: Number(values[2]),
-            coverage_status: values[3],
-          }
-        })
+        const parsed = result.data
+  .map((item) => ({
+    ...item,
+    forecast_date: item.forecast_date || item.trading_date,
+    article_count: Number(item.article_count),
+    mean_tone:
+      item.mean_tone === null ? null : Number(item.mean_tone),
+  }))
+  .filter((item) => Boolean(item.forecast_date))
+  .sort((a, b) =>
+    a.forecast_date.localeCompare(b.forecast_date)
+  )
 
         setData(parsed)
         setLoading(false)
@@ -76,9 +88,15 @@ function NewsChart() {
     0
   )
 
-  const averageTone = filteredData.length
-    ? filteredData.reduce((sum, item) => sum + item.mean_tone, 0) /
-      filteredData.length
+  const toneRecords = filteredData.filter(
+    (item) => item.mean_tone !== null
+  )
+
+  const averageTone = toneRecords.length
+    ? toneRecords.reduce(
+        (sum, item) => sum + (item.mean_tone ?? 0),
+        0
+      ) / toneRecords.length
     : null
 
   return (
@@ -169,6 +187,7 @@ function NewsChart() {
                 name="Mean News Tone"
                 stroke="#16a34a"
                 dot={false}
+                connectNulls={false}
               />
             </ComposedChart>
           </ResponsiveContainer>

@@ -21,3 +21,19 @@ STATUS: DATASET INTEGRITY PASSED
 
 Evidence:
 final_next_day_forecasting_dataset_corrected.csv
+NEXT-TRADING-DAY ALIGNMENT VERIFICATION
+
+Total forecast records: 433
+Targets not after forecast origins: 0
+Duplicate forecast-target pairs: 0
+
+First forecast:
+2025-01-01 -> 2025-01-02
+
+Final forecast:
+2026-09-29 -> 2026-09-30
+
+Weekend trading-day alignment: VERIFIED
+
+STATUS: NEXT-DAY ALIGNMENT PASSED
+

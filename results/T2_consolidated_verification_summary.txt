@@ -1,0 +1,31 @@
+
+T2 CONSOLIDATED NEWS VERIFICATION SUMMARY
+Date: 02-Nov-2026
+
+HISTORICAL:
+Trading dates audited: 369
+News available: 357
+News unavailable: 12
+Article count mismatches: 0
+Lower-bound leakage: 0
+Upper-bound leakage: 0
+
+TESTING:
+Trading dates audited: 65
+Article count mismatches: 0
+Lower-bound leakage: 0
+Upper-bound leakage: 0
+
+SOURCE INVENTORY:
+Valid raw rows: 30055
+Unique article URLs: 28141
+Duplicate URL rows: 1914
+Missing/empty weekly files: Weeks 24-26 and 28-35
+Duplicate July 2025 source files: 2
+Original GDELT SQL: Not found
+Reliance organization matching: Not verified
+
+FINAL T2 STATUS: PARTIAL
+Timestamp alignment and leakage checks passed.
+Source completeness and relevance matching remain unverified.
+

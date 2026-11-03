@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pathlib import Path
 from dotenv import load_dotenv
 import os
@@ -8,18 +8,9 @@ import secrets
 import subprocess
 import sys
 import pandas as pd
-from threading import Lock
+from threading import Lock, Thread
+from datetime import datetime
 from supabase_client import supabase
-BASE_DIR = Path(__file__).resolve().parent
-load_dotenv(BASE_DIR / ".env")
-
-WINDMILL_API_TOKEN = os.getenv("WINDMILL_API_TOKEN")
-
-RESULTS_DIR = BASE_DIR / "results"
-METRICS_FILE = RESULTS_DIR / "benchmark_metrics_revised_corrected.csv"
-PREDICTIONS_FILE = RESULTS_DIR / "testing_model_predictions_corrected.csv"
-BENCHMARK_SCRIPT = BASE_DIR / "run_benchmarks_corrected.py"
-# FASTAPI APPLICATION
 app = FastAPI(
     title="Reliance Stock Forecasting API",
     description="Chronos-2 stock forecasting benchmark API",
@@ -49,7 +40,8 @@ execution = {
     "completed_at": None,
     "error": None,
     "metrics_synced": None,
-    "forecasts_synced": None
+    "forecasts_synced": None,
+    "news_synced": None
 }
 
 execution_lock = Lock()
@@ -135,22 +127,29 @@ def sync_forecasts_to_supabase():
 
     return len(records)
 
+
 def verify_windmill_token(
-    authorization: str = Header(default="")
+    authorization: str = Header(default="", alias="Authorization")
 ):
-    if not WINDMILL_API_TOKEN:
+    expected_token = (WINDMILL_API_TOKEN or "").strip()
+
+    if not expected_token:
         raise HTTPException(
             status_code=500,
             detail="API token is not configured"
         )
 
-    scheme, _, supplied_token = authorization.partition(" ")
+    supplied_header = authorization.strip()
+    scheme, separator, supplied_token = supplied_header.partition(" ")
+
+    supplied_token = supplied_token.strip()
 
     if (
         scheme.lower() != "bearer"
+        or not separator
         or not secrets.compare_digest(
             supplied_token,
-            WINDMILL_API_TOKEN
+            expected_token
         )
     ):
         raise HTTPException(
@@ -159,22 +158,35 @@ def verify_windmill_token(
         )
 
     return True
+
+@app.get("/auth-check")
+def auth_check(token: None = Depends(verify_windmill_token)):
+    return {
+        "status": "success",
+        "message": "API authentication is working."
+    }
 # MANUAL SUPABASE SYNC ENDPOINTS
-@app.post("/sync-supabase")
-def sync_supabase(token: None = Depends(verify_windmill_token)):
+@app.get("/supabase-forecasts")
+def get_supabase_forecasts():
     try:
-        count = sync_metrics_to_supabase()
+        response = (
+            supabase
+            .table("forecasts")
+            .select("*")
+            .execute()
+        )
 
         return {
             "status": "success",
-            "message": "Benchmark metrics synchronized with Supabase.",
-            "records_synced": count
+            "count": len(response.data),
+            "data": response.data
         }
 
-    except Exception as error:
-        raise HTTPException(status_code=500, detail=str(error))
-
-
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to retrieve Supabase forecasts."
+        )
 @app.post("/sync-forecasts")
 def sync_forecasts(token: None = Depends(verify_windmill_token)):
     try:
@@ -187,72 +199,10 @@ def sync_forecasts(token: None = Depends(verify_windmill_token)):
         }
 
     except Exception as error:
-        raise HTTPException(status_code=500, detail=str(error))
+        raise HTTPException(status_code=500, detail="An internal server error occurred. Please try again.")
 
 
 # BENCHMARK EXECUTION
-@app.post("/run-benchmark")
-def start_benchmark(token: None = Depends(verify_windmill_token)):
-
-    try:
-        update_execution(
-            status="running",
-            message="Chronos-2 benchmark is running...",
-            started_at=datetime.now().astimezone().isoformat(),
-            completed_at=None,
-            error=None,
-            metrics_synced=None,
-            forecasts_synced=None
-        )
-
-        if not BENCHMARK_SCRIPT.exists():
-            raise FileNotFoundError(
-                "run_benchmarks_corrected.py was not found."
-            )
-
-        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-
-        subprocess.run(
-            [sys.executable, str(BENCHMARK_SCRIPT)],
-            cwd=str(BASE_DIR),
-            capture_output=True,
-            text=True,
-            check=True
-        )
-
-        metrics_count = sync_metrics_to_supabase()
-        forecasts_count = sync_forecasts_to_supabase()
-
-        update_execution(
-            status="completed",
-            message="Benchmark completed and Supabase synchronization successful.",
-            completed_at=datetime.now().astimezone().isoformat(),
-            error=None,
-            metrics_synced=metrics_count,
-            forecasts_synced=forecasts_count
-        )
-
-    except subprocess.CalledProcessError as error:
-
-        error_message = (
-            error.stderr.strip() if error.stderr else str(error)
-        )
-
-        update_execution(
-            status="failed",
-            message="Benchmark execution failed.",
-            completed_at=datetime.now().astimezone().isoformat(),
-            error=error_message[-4000:]
-        )
-
-    except Exception as error:
-
-        update_execution(
-            status="failed",
-            message="Benchmark or Supabase synchronization failed.",
-            completed_at=datetime.now().astimezone().isoformat(),
-            error=str(error)[-4000:]
-        )
 
 
 # ROOT
@@ -274,7 +224,6 @@ def health_check():
 # RUN BENCHMARK
 @app.post("/run-benchmark")
 def start_benchmark():
-
     with execution_lock:
 
         if execution["status"] == "running":
@@ -295,13 +244,85 @@ def start_benchmark():
 
     thread = Thread(target=run_benchmark, daemon=True)
     thread.start()
-
     return {
-        "message": "Benchmark started. Results will synchronize with Supabase.",
+        "message": "Benchmark started successfully.",
         "status": "running"
     }
 
+def run_benchmark():
+    try:
+        update_execution(
+            status="running",
+            message="Running Chronos-2 benchmark..."
+        )
 
+        result = subprocess.run(
+            [sys.executable, str(BENCHMARK_SCRIPT)],
+            cwd=BASE_DIR,
+            capture_output=True,
+            text=True,
+            check=True
+        )
+
+        # Synchronize benchmark metrics
+        metrics_count = sync_metrics_to_supabase()
+
+        # Synchronize stock forecasts
+        forecasts_count = sync_forecasts_to_supabase()
+
+        # Synchronize news features
+        news_count = sync_news_to_supabase()
+
+        update_execution(
+            status="completed",
+            message="Benchmark completed. All three datasets synchronized.",
+            completed_at=datetime.now().astimezone().isoformat(),
+            error=None,
+            metrics_synced=metrics_count,
+            forecasts_synced=forecasts_count,
+            news_synced=news_count
+        )
+
+    except Exception as error:
+        update_execution(
+            status="failed",
+            message="Benchmark execution or synchronization failed.",
+            completed_at=datetime.now().astimezone().isoformat(),
+            error=str(error)
+        )
+
+def sync_news_to_supabase():
+    NEWS_FILE = BASE_DIR / "results" / "testing_news_forecast_features_corrected.csv"
+
+    if not NEWS_FILE.exists():
+        raise FileNotFoundError(f"News file not found: {NEWS_FILE}")
+
+    df = pd.read_csv(NEWS_FILE)
+
+    required = [
+        "forecast_date",
+        "article_count",
+        "mean_tone",
+        "coverage_status"
+    ]
+
+    missing = [col for col in required if col not in df.columns]
+
+    if missing:
+        raise ValueError(f"Missing news columns: {missing}")
+
+    df = df[required].copy()
+    df["trading_date"] = df["forecast_date"]
+
+    records = (
+        df.astype(object)
+        .where(pd.notna(df), None)
+        .to_dict(orient="records")
+    )
+
+    supabase.table("news_features").upsert(records).execute()
+
+    return len(records)
 # EXECUTION STATUS
 
 @app.get("/execution-status")
@@ -349,7 +370,7 @@ def get_metrics(token: None = Depends(verify_windmill_token)):
         raise
 
     except Exception as error:
-        raise HTTPException(status_code=500, detail=str(error))
+        raise HTTPException(status_code=500, detail="An internal server error occurred. Please try again.")
 
 
 # PREDICTIONS
@@ -370,17 +391,22 @@ def get_predictions(token: None = Depends(verify_windmill_token)):
         ).to_dict(orient="records")
 
     except Exception as error:
-        raise HTTPException(status_code=500, detail=str(error))
+        raise HTTPException(status_code=500, detail="An internal server error occurred. Please try again.")
 
 
 # QUESTION AND ANSWER
+
 class QuestionRequest(BaseModel):
-    question: str
+    question: str = Field(
+        min_length=1,
+        max_length=500,
+        strip_whitespace=True
+    )
+
 
 
 @app.post("/ask")
 def ask_question(request: QuestionRequest):
-
     question = request.question.lower().strip()
 
     if not METRICS_FILE.exists():
@@ -397,21 +423,17 @@ def ask_question(request: QuestionRequest):
         c1 = df[df["Model"] == "C1 Chronos-2 Price + News"].iloc[0]
 
         if "best model" in question or "performed best" in question:
-
             best = df.loc[df["MAE"].idxmin()]
-
             answer = (
                 f"{best['Model']} performed best based on MAE, "
                 f"with an MAE of {best['MAE']:.4f}."
             )
 
         elif "news" in question or "improve" in question:
-
             change = ((c0["MAE"] - c1["MAE"]) / c0["MAE"]) * 100
 
             if change >= 0:
                 answer = f"Adding news reduced MAE by {change:.2f}%."
-
             else:
                 answer = (
                     f"Adding news increased MAE by {abs(change):.2f}%. "
@@ -419,7 +441,6 @@ def ask_question(request: QuestionRequest):
                 )
 
         elif "mae" in question:
-
             answer = (
                 f"Naive MAE: {naive['MAE']:.4f}. "
                 f"C0 MAE: {c0['MAE']:.4f}. "
@@ -427,7 +448,6 @@ def ask_question(request: QuestionRequest):
             )
 
         elif "rmse" in question:
-
             answer = (
                 f"Naive RMSE: {naive['RMSE']:.4f}. "
                 f"C0 RMSE: {c0['RMSE']:.4f}. "
@@ -435,7 +455,6 @@ def ask_question(request: QuestionRequest):
             )
 
         elif "direction" in question or "accuracy" in question:
-
             answer = (
                 f"C0 directional accuracy: {c0['Directional_Accuracy']}%. "
                 f"C1 directional accuracy: {c1['Directional_Accuracy']}%. "
@@ -443,7 +462,6 @@ def ask_question(request: QuestionRequest):
             )
 
         else:
-
             answer = (
                 "I can answer questions about best model, MAE, RMSE, "
                 "directional accuracy, and the impact of adding news."
@@ -456,5 +474,45 @@ def ask_question(request: QuestionRequest):
             "answer_type": "rule_based"
         }
 
-    except Exception as error:
-        raise HTTPException(status_code=500, detail=str(error))
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="An internal server error occurred. Please try again."
+        )
+@app.get("/supabase-metrics")
+def get_supabase_metrics():
+    try:
+        response = (
+            supabase
+            .table("benchmark_metrics")
+            .select("*")
+            .execute()
+        )
+
+        return {
+            "status": "success",
+            "count": len(response.data),
+            "data": response.data
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+@app.get("/supabase-news-features")
+def get_supabase_news_features():
+    try:
+        response = supabase.table("news_features").select("*").execute()
+
+        return {
+            "status": "success",
+            "count": len(response.data),
+            "data": response.data
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )

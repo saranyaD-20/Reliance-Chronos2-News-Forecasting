@@ -1,0 +1,21 @@
+﻿FORECAST-001 - T8 REPRODUCIBILITY VERIFICATION
+Date: 02 November 2026
+
+STATUS: PENDING FINAL COMPARISON
+
+Backup metrics file:
+benchmark_metrics_revised_corrected.csv
+
+Backup predictions file:
+testing_model_predictions_corrected.csv
+
+Verified:
+- Backup predictions: 64 rows
+- Current predictions: 64 rows
+
+Pending:
+- Confirm field-by-field prediction comparison.
+- Confirm benchmark metrics comparison.
+
+Conclusion:
+T8 remains pending until both comparisons are verified.

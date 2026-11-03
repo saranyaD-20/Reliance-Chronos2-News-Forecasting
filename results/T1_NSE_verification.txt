@@ -27,3 +27,29 @@ STATUS: PRICE DATA VALIDATION PASSED
 
 Note: Official source provenance and file hashes
 require separate documentation.
+
+NSE PRICE SOURCE VALIDATION – UPDATE
+Date: 02-Nov-2026
+
+Source files identified: 4
+Total raw rows: 490
+RELIANCE EQ rows: 478
+Unique RELIANCE EQ trading dates: 434
+Overlapping EQ records: 44
+Conflicting EQ closing prices: 0
+Invalid EQ closing prices: 0
+
+Validation:
+- Symbol: RELIANCE
+- Required series: EQ
+- Price field: Close Price
+- Original CSV files preserved.
+- Overlapping records have matching closing prices.
+
+LIMITATION:
+File hashes and CSV structure have been recorded.
+Official NSE download URL, download timestamp and
+independent source provenance still require confirmation.
+
+T1 STATUS: PARTIAL – provenance evidence pending.
+

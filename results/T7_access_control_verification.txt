@@ -1,0 +1,46 @@
+﻿FORECAST-001 - T7 ACCESS CONTROL VERIFICATION
+Date: 02 November 2026
+
+STATUS: PARTIAL
+
+Verified:
+1. Supabase RLS enabled on all four data tables.
+2. Anonymous database queries returned zero visible records.
+3. Unauthenticated /metrics request returned HTTP 401.
+4. Unauthenticated /predictions request returned HTTP 401.
+5. Authenticated /metrics request returned 3 benchmark records.
+6. Authenticated /predictions request returned 64 forecast records.
+7. /execution-status is accessible without authentication.
+
+Pending:
+1. Complete security review of all API routes.
+2. Verify write permissions and service-role key protection.
+3. Final security verification.
+
+Conclusion:
+Core API authentication checks passed.
+Full access-control verification remains incomplete.
+
+Additional verification - 03 November 2026
+
+8. /ask rejected an empty question with HTTP 422.
+9. /ask rejected a 501-character question with HTTP 422.
+10. /ask accepted a valid question and returned the stored benchmark answer.
+11. QuestionRequest enforces a 1-500 character limit.
+12. Generic error messages were added to all five API exception handlers.
+13. API token validation uses secrets.compare_digest.
+14. .env and dashboard/.env.local are excluded by Git ignore rules.
+15. No Supabase service-role key references were found in dashboard/src.
+
+Still pending:
+1. Confirm no raw exception messages remain in api.py.
+2. Complete API route-by-route access-control review.
+3. Verify database write permissions and service-role key protection.
+4. Check Git history for accidentally committed secrets.
+5. Complete final security verification.
+
+STATUS: PARTIAL
+
+Conclusion:
+API input validation and several authentication checks have passed.
+Full T7 access-control verification is not yet complete.
