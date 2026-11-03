@@ -1,4 +1,5 @@
 
+import { supabase } from './lib/supabase'
 import { useState, useEffect, useCallback } from 'react'
 const API_URL = 'https://reliance-chronos-api.onrender.com'
 
@@ -67,36 +68,37 @@ export default function BenchmarkControls() {
   }, [checkStatus])
 
   const runBenchmark = async () => {
-    setLoading(true)
-    setRequestError('')
+  setLoading(true)
+  setRequestError('')
 
-    try {
-      const response = await fetch(
-        `${API_URL}/run-benchmark`,
-        { method: 'POST' }
-      )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(
-          data.detail || 'Unable to start benchmark.'
-        )
+  try {
+    
+    const { data, error } = await supabase.functions.invoke(
+      'bright-endpoint',
+      {
+        body: {},
       }
+    )
 
-      await checkStatus()
-
-    } catch (error) {
-      setRequestError(
-        error instanceof Error
-          ? error.message
-          : 'Something went wrong.'
-      )
-    } finally {
-      setLoading(false)
+    if (error) {
+      throw new Error(error.message)
     }
-  }
 
+    if (data?.error) {
+      throw new Error(data.error)
+    }
+
+    await checkStatus()
+  } catch (error) {
+    if (error instanceof Error) {
+  setRequestError(error.message)
+} else {
+  setRequestError(JSON.stringify(error))
+}
+  } finally {
+    setLoading(false)
+  }
+}
   const isRunning = execution.status === 'running'
 
   const statusColors = {
