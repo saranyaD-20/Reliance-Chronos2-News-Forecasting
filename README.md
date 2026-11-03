@@ -318,7 +318,10 @@ Verification reports are maintained in the `results/` folder:
 
 \- The current backend uses FastAPI.
 
-\- Supabase and Windmill integrations are not yet implemented.
+- Supabase PostgreSQL integration is implemented for storing benchmark metrics, forecasts, and news features.
+- Windmill integration and automated workflow orchestration are not yet verified.
+- The dashboard Q&A uses predefined responses and is not a generative AI assistant.
+- Public HTTPS deployment and the planned 72-hour pilot have not yet been verified.
 
 \- Public HTTPS deployment and 72-hour pilot retention are not verified.
 

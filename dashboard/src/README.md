@@ -34,6 +34,11 @@ This is a research benchmark, not an investment recommendation.
 
 - NSE Reliance historical equity data
 - GDELT Global Knowledge Graph news data
+### Database and Integration
+
+- Supabase PostgreSQL
+- Supabase Python Client
+- REST API integration
 
 ## Project Structure
 
@@ -138,6 +143,12 @@ npm run dev
 
 Open the local Vite address displayed in the terminal.
 
+
+## 5. Update Important API Endpoints
+
+Add the Supabase endpoints:
+
+```markdown
 ## Important API Endpoints
 
 - `/health` – Backend health check
@@ -146,7 +157,9 @@ Open the local Vite address displayed in the terminal.
 - `/execution-status` – Benchmark execution status
 - `/run-benchmark` – Start benchmark execution
 - `/ask` – Benchmark question-answer endpoint
-
+- `/supabase-metrics` – Retrieve metrics from Supabase
+- `/supabase-forecasts` – Retrieve forecasts from Supabase
+- `/supabase-news-features` – Retrieve news features from Supabase
 ## Verification
 
 Verification reports are maintained in the `results/` folder:
@@ -157,15 +170,18 @@ Verification reports are maintained in the `results/` folder:
 - T4 – Chronos benchmark verification
 - T5 – Backend API verification
 - T6 – Frontend verification
+- T7 – Access control verification
+- T8 – Reproducibility verification
+- T9 – Onboarding verification
 
 ## Known Limitations
 
 - Historical news coverage contains documented gaps.
 - Reliance-specific organization matching against the original GDELT organization fields has not been independently verified.
-- The current backend uses FastAPI.
-- Supabase and Windmill integrations are not yet implemented.
+- The benchmark evaluates one stock over a limited testing period.
 - Public HTTPS deployment and 72-hour pilot retention are not verified.
 - The dashboard question-answer feature uses predefined benchmark responses rather than a generative AI model.
+- The benchmark endpoint currently supports local testing; production authentication and deployment security require further hardening.
 
 ## Disclaimer
 
