@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-const API_URL = 'https://reliance-chronos-api.onrender.com'
-
+const API_URL = import.meta.env.VITE_API_BASE_URL
 interface ExecutionStatus {
   status: 'idle' | 'running' | 'completed' | 'failed'
   message: string
