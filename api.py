@@ -290,47 +290,7 @@ def run_benchmark():
             error=str(error)
         )
 
-def run_benchmark():
-    try:
-        update_execution(
-            status="running",
-            message="Running Chronos-2 benchmark..."
-        )
 
-        result = subprocess.run(
-            [sys.executable, str(BENCHMARK_SCRIPT)],
-            cwd=BASE_DIR,
-            capture_output=True,
-            text=True,
-            check=True
-        )
-
-        # Synchronize benchmark metrics
-        metrics_count = sync_metrics_to_supabase()
-
-        # Synchronize stock forecasts
-        forecasts_count = sync_forecasts_to_supabase()
-
-        # Synchronize news features
-        news_count = sync_news_to_supabase()
-
-        update_execution(
-            status="completed",
-            message="Benchmark completed. All three datasets synchronized.",
-            completed_at=datetime.now().astimezone().isoformat(),
-            error=None,
-            metrics_synced=metrics_count,
-            forecasts_synced=forecasts_count,
-            news_synced=news_count
-        )
-
-    except Exception as error:
-        update_execution(
-            status="failed",
-            message="Benchmark execution or synchronization failed.",
-            completed_at=datetime.now().astimezone().isoformat(),
-            error=str(error)
-        )
 
 def sync_news_to_supabase():
     NEWS_FILE = BASE_DIR / "results" / "testing_news_forecast_features_corrected.csv"
