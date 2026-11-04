@@ -1,8 +1,7 @@
-
-import { supabase } from './lib/supabase'
 import { useState, useEffect, useCallback } from 'react'
+
 const API_URL = 'https://reliance-chronos-api.onrender.com'
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+
 interface ExecutionStatus {
   status: 'idle' | 'running' | 'completed' | 'failed'
   message: string
@@ -35,6 +34,7 @@ export default function BenchmarkControls() {
   const [loading, setLoading] = useState(false)
   const [requestError, setRequestError] = useState('')
 
+  // Check the current benchmark status
   const checkStatus = useCallback(async () => {
     try {
       const response = await fetch(
@@ -56,6 +56,7 @@ export default function BenchmarkControls() {
     }
   }, [])
 
+  // Check status every 3 seconds
   useEffect(() => {
     checkStatus()
 
@@ -67,24 +68,52 @@ export default function BenchmarkControls() {
     return () => window.clearInterval(interval)
   }, [checkStatus])
 
+  // Start the benchmark
   const runBenchmark = async () => {
-  setLoading(true)
-  setRequestError('')
+    setLoading(true)
+    setRequestError('')
 
-  try {
-  
+    try {
+      const response = await fetch(
+        `${API_URL}/run-benchmark`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': import.meta.env.VITE_API_SECRET_KEY,
+          },
+        }
+      )
 
-    await checkStatus()
-  } catch (error) {
-    if (error instanceof Error) {
-  setRequestError(error.message)
-} else {
-  setRequestError(JSON.stringify(error))
-}
-  } finally {
-    setLoading(false)
+      if (!response.ok) {
+        const errorData = await response.json()
+
+        throw new Error(
+          errorData.detail ||
+          'Failed to start benchmark.'
+        )
+      }
+
+      const data = await response.json()
+
+      console.log('Benchmark started:', data)
+
+      // Immediately update the dashboard status
+      await checkStatus()
+
+    } catch (error) {
+      if (error instanceof Error) {
+        setRequestError(error.message)
+      } else {
+        setRequestError(
+          'An unexpected error occurred.'
+        )
+      }
+    } finally {
+      setLoading(false)
+    }
   }
-}
+
   const isRunning = execution.status === 'running'
 
   const statusColors = {
@@ -99,6 +128,7 @@ export default function BenchmarkControls() {
       <div className="benchmark-controls-header">
         <div>
           <h2>Benchmark Execution</h2>
+
           <p>
             Run the Chronos-2 stock forecasting benchmark
             and compare the three forecasting models.
@@ -121,7 +151,8 @@ export default function BenchmarkControls() {
           <span
             className="status-indicator"
             style={{
-              backgroundColor: statusColors[execution.status],
+              backgroundColor:
+                statusColors[execution.status],
             }}
           />
 
@@ -135,12 +166,18 @@ export default function BenchmarkControls() {
         <div className="execution-details">
           <div>
             <span>Started At</span>
-            <strong>{formatDate(execution.started_at)}</strong>
+
+            <strong>
+              {formatDate(execution.started_at)}
+            </strong>
           </div>
 
           <div>
             <span>Completed At</span>
-            <strong>{formatDate(execution.completed_at)}</strong>
+
+            <strong>
+              {formatDate(execution.completed_at)}
+            </strong>
           </div>
         </div>
 
