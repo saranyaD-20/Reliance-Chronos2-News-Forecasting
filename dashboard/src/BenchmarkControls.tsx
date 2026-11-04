@@ -2,7 +2,7 @@
 import { supabase } from './lib/supabase'
 import { useState, useEffect, useCallback } from 'react'
 const API_URL = 'https://reliance-chronos-api.onrender.com'
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 interface ExecutionStatus {
   status: 'idle' | 'running' | 'completed' | 'failed'
   message: string
@@ -72,21 +72,7 @@ export default function BenchmarkControls() {
   setRequestError('')
 
   try {
-    
-    const { data, error } = await supabase.functions.invoke(
-      'bright-endpoint',
-      {
-        body: {},
-      }
-    )
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    if (data?.error) {
-      throw new Error(data.error)
-    }
+  
 
     await checkStatus()
   } catch (error) {
