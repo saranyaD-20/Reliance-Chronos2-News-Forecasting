@@ -45,16 +45,16 @@ app.add_middleware(
 
 
 # EXECUTION STATUS
-execution = {
-    "status": "idle",
-    "message": "Ready to run the benchmark.",
-    "started_at": None,
-    "completed_at": None,
-    "error": None,
-    "metrics_synced": None,
-    "forecasts_synced": None,
-    "news_synced": None
-}
+update_execution(
+    status="completed",
+    message="Benchmark completed. All three datasets synchronized.",
+    completed_at=datetime.now().astimezone().isoformat(),
+    error=None,
+    metrics_synced=metrics_count,
+    forecasts_synced=forecasts_count,
+    news_synced=news_count
+)
+
 
 execution_lock = Lock()
 
