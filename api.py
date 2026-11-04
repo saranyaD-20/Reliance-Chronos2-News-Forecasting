@@ -344,12 +344,14 @@ def run_benchmark():
         print("STEP 7: Updating status to COMPLETED")
 
         update_execution(
-            status="running",
-            message="Benchmark execution started.",
-            started_at=datetime.now().astimezone().isoformat(),
-            completed_at=None
-        )
-
+    status="completed",
+    message="Benchmark completed successfully. All datasets synchronized.",
+    completed_at=datetime.now().astimezone().isoformat(),
+    error=None,
+    metrics_synced=metrics_count,
+    forecasts_synced=forecasts_count,
+    news_synced=news_count
+)
         print("STEP 8: Benchmark fully completed")
 
     except subprocess.CalledProcessError as error:
