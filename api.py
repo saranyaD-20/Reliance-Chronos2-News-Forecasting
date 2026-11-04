@@ -45,15 +45,18 @@ app.add_middleware(
 
 
 # EXECUTION STATUS
-update_execution(
-    status="completed",
-    message="Benchmark completed. All three datasets synchronized.",
-    completed_at=datetime.now().astimezone().isoformat(),
-    error=None,
-    metrics_synced=metrics_count,
-    forecasts_synced=forecasts_count,
-    news_synced=news_count
-)
+execution = {
+    "status": "idle",
+    "message": "Ready to run the benchmark.",
+    "started_at": None,
+    "completed_at": None,
+    "error": None,
+    "metrics_synced": None,
+    "forecasts_synced": None,
+    "news_synced": None,
+}
+
+
 
 
 execution_lock = Lock()
@@ -63,6 +66,10 @@ def update_execution(**kwargs):
     with execution_lock:
         execution.update(kwargs)
 
+
+@app.get("/health")
+def health():
+    return {"status": "healthy"}
 
 # SUPABASE SYNC FUNCTIONS
 def sync_metrics_to_supabase():
@@ -228,14 +235,59 @@ def home():
     }
 
 
-# HEALTH CHECK
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
+@app.get("/execution-status")
+def execution_status():
+    with execution_lock:
+        return execution.copy()
+
 
 
 # RUN BENCHMARK
 @app.post("/run-benchmark")
+def start_benchmark(
+    x_api_key: str = Header(...)
+):
+    expected_key = os.getenv("API_SECRET_KEY")
+
+    if not expected_key or not secrets.compare_digest(
+        x_api_key,
+        expected_key
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or missing API key."
+        )
+
+    with execution_lock:
+
+        if execution["status"] == "running":
+            raise HTTPException(
+                status_code=409,
+                detail="Benchmark is already running."
+            )
+
+        execution.update({
+            "status": "running",
+            "message": "Benchmark execution started.",
+            "started_at": datetime.now().astimezone().isoformat(),
+            "completed_at": None,
+            "error": None,
+            "metrics_synced": None,
+            "forecasts_synced": None,
+            "news_synced": None,
+        })
+
+    thread = Thread(
+        target=run_benchmark,
+        daemon=True
+    )
+
+    thread.start()
+
+    return {
+        "message": "Benchmark started successfully.",
+        "status": "running"
+    }
 def run_benchmark():
     try:
         print("STEP 1: Starting benchmark")
@@ -271,7 +323,7 @@ def run_benchmark():
 
         update_execution(
             status="completed",
-            message="Benchmark completed. All three datasets synchronized.",
+            message="Benchmark completed successfully. All datasets synchronized.",
             completed_at=datetime.now().astimezone().isoformat(),
             error=None,
             metrics_synced=metrics_count,
@@ -281,7 +333,21 @@ def run_benchmark():
 
         print("STEP 8: Benchmark fully completed")
 
+    except subprocess.CalledProcessError as error:
+
+        print("BENCHMARK SCRIPT ERROR")
+        print("STDOUT:", error.stdout)
+        print("STDERR:", error.stderr)
+
+        update_execution(
+            status="failed",
+            message="Benchmark script failed.",
+            completed_at=datetime.now().astimezone().isoformat(),
+            error=error.stderr or str(error)
+        )
+
     except Exception as error:
+
         print("BENCHMARK ERROR:", str(error))
 
         update_execution(
@@ -290,8 +356,6 @@ def run_benchmark():
             completed_at=datetime.now().astimezone().isoformat(),
             error=str(error)
         )
-
-
 
 def sync_news_to_supabase():
     NEWS_FILE = BASE_DIR / "results" / "testing_news_forecast_features_corrected.csv"
