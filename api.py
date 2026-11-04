@@ -235,45 +235,60 @@ def health_check():
 
 
 # RUN BENCHMARK
-@app.post("/run-benchmark")
-def start_benchmark(
-    x_api_key: str = Header(...)
-):
-    expected_key = os.getenv("API_SECRET_KEY")
+def run_benchmark():
+    try:
+        print("STEP 1: Starting benchmark")
 
-    if not expected_key or not secrets.compare_digest(
-        x_api_key, expected_key
-    ):
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid or missing API key."
+        update_execution(
+            status="running",
+            message="Running Chronos-2 benchmark..."
         )
 
-    with execution_lock:
+        print("STEP 2: Running Python benchmark script")
 
-        if execution["status"] == "running":
-            raise HTTPException(
-                status_code=409,
-                detail="Benchmark is already running."
-            )
+        result = subprocess.run(
+            [sys.executable, str(BENCHMARK_SCRIPT)],
+            cwd=BASE_DIR,
+            capture_output=True,
+            text=True,
+            check=True
+        )
 
-        execution.update({
-            "status": "running",
-            "message": "Benchmark execution started.",
-            "started_at": datetime.now().astimezone().isoformat(),
-            "completed_at": None,
-            "error": None,
-            "metrics_synced": None,
-            "forecasts_synced": None
-        })
+        print("STEP 3: Benchmark script completed successfully")
+        print(result.stdout)
 
-    thread = Thread(target=run_benchmark, daemon=True)
-    thread.start()
+        print("STEP 4: Syncing metrics to Supabase")
+        metrics_count = sync_metrics_to_supabase()
 
-    return {
-        "message": "Benchmark started successfully.",
-        "status": "running"
-    }
+        print("STEP 5: Syncing forecasts to Supabase")
+        forecasts_count = sync_forecasts_to_supabase()
+
+        print("STEP 6: Syncing news to Supabase")
+        news_count = sync_news_to_supabase()
+
+        print("STEP 7: Updating status to COMPLETED")
+
+        update_execution(
+            status="completed",
+            message="Benchmark completed. All three datasets synchronized.",
+            completed_at=datetime.now().astimezone().isoformat(),
+            error=None,
+            metrics_synced=metrics_count,
+            forecasts_synced=forecasts_count,
+            news_synced=news_count
+        )
+
+        print("STEP 8: Benchmark fully completed")
+
+    except Exception as error:
+        print("BENCHMARK ERROR:", str(error))
+
+        update_execution(
+            status="failed",
+            message="Benchmark execution or synchronization failed.",
+            completed_at=datetime.now().astimezone().isoformat(),
+            error=str(error)
+        )
 
 def run_benchmark():
     try:
