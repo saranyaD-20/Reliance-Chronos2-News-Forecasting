@@ -63,8 +63,30 @@ execution_lock = Lock()
 
 
 def update_execution(**kwargs):
+    # Update local execution status
     with execution_lock:
         execution.update(kwargs)
+
+    # Update Supabase benchmark_runs table
+    try:
+        response = (
+            supabase
+            .table("benchmark_runs")
+            .select("id")
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+
+        if response.data:
+            run_id = response.data[0]["id"]
+
+            supabase.table("benchmark_runs").update(
+                kwargs
+            ).eq("id", run_id).execute()
+
+    except Exception as error:
+        print(f"Supabase execution status update error: {error}")
 
 
 @app.get("/health")
@@ -322,13 +344,10 @@ def run_benchmark():
         print("STEP 7: Updating status to COMPLETED")
 
         update_execution(
-            status="completed",
-            message="Benchmark completed successfully. All datasets synchronized.",
-            completed_at=datetime.now().astimezone().isoformat(),
-            error=None,
-            metrics_synced=metrics_count,
-            forecasts_synced=forecasts_count,
-            news_synced=news_count
+            status="running",
+            message="Benchmark execution started.",
+            started_at=datetime.now().astimezone().isoformat(),
+            completed_at=None
         )
 
         print("STEP 8: Benchmark fully completed")
