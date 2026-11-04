@@ -235,6 +235,7 @@ def health_check():
 
 
 # RUN BENCHMARK
+@app.post("/run-benchmark")
 def run_benchmark():
     try:
         print("STEP 1: Starting benchmark")
