@@ -1,7 +1,7 @@
 
 import { useState } from 'react'
 
-const API_URL = 'https://reliance-chronos-api.onrender.com'
+const API_URL = 'https://reliance-chronos2-news-forecasting.onrender.com/'
 
 interface QAResponse {
   question: string
